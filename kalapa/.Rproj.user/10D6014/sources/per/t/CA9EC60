@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1587493300542.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1605584149",
+    "id" : "CA9EC60",
+    "lastKnownWriteTime" : 1587613613,
+    "last_content_update" : 1587613615532,
+    "path" : "~/kalapa/kalapa_script.R",
+    "project_path" : "kalapa_script.R",
+    "properties" : {
+        "cursorPosition" : "8,0",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

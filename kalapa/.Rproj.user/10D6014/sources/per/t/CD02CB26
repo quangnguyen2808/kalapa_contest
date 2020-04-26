@@ -1,0 +1,33 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1586878937790.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "CD02CB26",
+    "lastKnownWriteTime" : 8315178114391286304,
+    "last_content_update" : 1586878937790,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "16668ED2",
+        "caption" : "df_train",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=df_train&cache_key=16668ED2",
+        "displayedObservations" : 30000,
+        "environment" : "",
+        "expression" : "df_train",
+        "object" : "df_train",
+        "preview" : 0,
+        "totalObservations" : 30000,
+        "variables" : 62
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}
