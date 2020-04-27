@@ -8,41 +8,42 @@ library(dplyr)
 df_train <- read_csv("train.csv")
 df_test <- read_csv("test.csv")
 
-f5352 <- function(x){
+fix_first_value <- function(x){
   return (replace(x, sort(unique(x))[1], sort(unique(x))[2]))
 }
 
-f5657 <- function(x){
+fix_last_value <- function(x){
   return (replace(x, sort(unique(x))[length(sort(unique(x)))], sort(unique(x))[length(sort(unique(x)))-1]))
 }
 
-f35 <- function(x){
-  x[x == "Zezo" | x == "Zero"] = 0
-  x[x == "I" | x == "One" | x == "A"] = 1
-  x[x == "II" | x == "Two" | x == "B"] = 2
-  x[x == "III" | x == "Three" | x == "C"] = 3
-  x[x == "IV" | x == "Four" | x == "D"] = 4
-  x[x == "V" | x == "Five"] = 5
+ordinal_encode <- function(x){
+  x[x == "Zero"] = 0
+  x[x == "One"] = 1
+  x[x == "Two"] = 2
+  x[x == "Three"] = 3
+  x[x == "Four"] = 4
+  x[x == "Five"] = 5
   x[x == "None"] = -1
   return(as.numeric(x))
 }
 
+df_train = select(df_train,-c(FIELD_7, FIELD_32))
+df_train$FIELD_35 <- ordinal_encode(df_train$FIELD_35)
+
 df_train %>% 
   mutate_if(is.character, function(x) {str_to_lower(x)}) %>%
-  mutate_at(c("FIELD_53", "FIELD_52"), f5352) %>%
-  mutate_at(c("FIELD_56","FIELD_57"), f5657) %>%
+  mutate_at(c("FIELD_53", "FIELD_52"), fix_first_value) %>%
+  mutate_at(c("FIELD_56","FIELD_57"), fix_last_value) %>%
   mutate(FIELD_31 = as.logical(FIELD_31)) -> df_train
+
+df_test = select(df_test,-c(FIELD_7, FIELD_32))
+df_test$FIELD_35 <- ordinal_encode(df_test$FIELD_35)
 
 df_test %>%
   mutate_if(is.character, function(x) {str_to_lower(x)}) %>%
-  mutate_at(c("FIELD_53", "FIELD_52"), f5352) %>%
-  mutate_at(c("FIELD_56", "FIELD_57"), f5657) %>%
+  mutate_at(c("FIELD_53", "FIELD_52"), fix_first_value) %>%
+  mutate_at(c("FIELD_56", "FIELD_57"), fix_last_value) %>%
   mutate_at(c("FIELD_36", "FIELD_31"), function(x){as.logical(x)}) -> df_test
-
-df_train = select(df_train,-c(FIELD_7, FIELD_32))
-df_test = select(df_test,-c(FIELD_7, FIELD_32))
-df_train$FIELD_35 <- f35(df_train$FIELD_35)
-df_test$FIELD_35 <- f35(df_test$FIELD_35)
 
 # Conduct binning variables: 
 library(scorecard)
