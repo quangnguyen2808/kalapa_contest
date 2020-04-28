@@ -47,17 +47,92 @@ Open RStudio and install packages in Console:
 
 ## Tests
 
-- In this challenge, I change the first value of `FIELD_52` and `FIELD_53` because it doesn't follow the pattern of the column. Same as `FIELD_56` and `FIELD_57` but the last value instead of the first value.
+What I do:
 
-- I also drop `FIELD_7` due to its complexity and `FIELD_32` due to its low importance information.
+- Change the first value of `FIELD_52` and `FIELD_53`.
 
-- `FIELD_35` is encoded from ordinal feature to numerical feature.
+- Change last value of `FIELD_56` and `FIELD_57`.
 
-- `FIELD_36` and `FIELD_31` have string data type, but the meaning is TRUE/FALSE, so I convert them into boolean/logical data type.
+- Drop `FIELD_7` and `FIELD_32`.
 
-[![handmade-de.png](https://i.postimg.cc/13H6vmYs/handmade-de.png)](https://postimg.cc/rDDKmkkP)
+- Ordinal to numerical: `FIELD_35`
+
+- String to Boolean: `FIELD_36` and `FIELD_31`.
+
+```
+fix_first_value <- function(x){
+  return (replace(x, sort(unique(x))[1], sort(unique(x))[2]))
+}
+
+fix_last_value <- function(x){
+  return (replace(x, sort(unique(x))[length(sort(unique(x)))], sort(unique(x))[length(sort(unique(x)))-1]))
+}
+
+ordinal_encode <- function(x){
+  x[x == "Zero"] = 0
+  x[x == "One"] = 1
+  x[x == "Two"] = 2
+  x[x == "Three"] = 3
+  x[x == "Four"] = 4
+  x[x == "Five"] = 5
+  x[x == "None"] = -1
+  return(as.numeric(x))
+}
+
+df_train = select(df_train,-c(FIELD_7, FIELD_32))
+df_train$FIELD_35 <- ordinal_encode(df_train$FIELD_35)
+
+df_train %>% 
+  mutate_if(is.character, function(x) {str_to_lower(x)}) %>%
+  mutate_at(c("FIELD_53", "FIELD_52"), fix_first_value) %>%
+  mutate_at(c("FIELD_56","FIELD_57"), fix_last_value) %>%
+  mutate(FIELD_31 = as.logical(FIELD_31)) -> df_train
+
+df_test = select(df_test,-c(FIELD_7, FIELD_32))
+df_test$FIELD_35 <- ordinal_encode(df_test$FIELD_35)
+
+df_test %>%
+  mutate_if(is.character, function(x) {str_to_lower(x)}) %>%
+  mutate_at(c("FIELD_53", "FIELD_52"), fix_first_value) %>%
+  mutate_at(c("FIELD_56", "FIELD_57"), fix_last_value) %>%
+  mutate_at(c("FIELD_36", "FIELD_31"), function(x){as.logical(x)}) -> df_test
+```
+- IV/WOE all features (you can see more about that [here](https://www.kaggle.com/pavansanagapati/weight-of-evidence-woe-information-value-iv))
+
+```
+# Conduct binning variables: 
+library(scorecard)
+
+# Generates optimal binning for all variables/features: 
+bins_var <- woebin(df_train %>% select(-id), y = "label", no_cores = 8, positive = "label|1", check_cate_num = FALSE)
+
+# IV for variables/features: 
+
+do.call("rbind", bins_var) %>% 
+  as.data.frame() %>% 
+  filter(!duplicated(variable)) %>% 
+  rename(iv_var = total_iv) %>% 
+  arrange(iv_var) %>% 
+  mutate(variable = factor(variable, levels = variable)) -> iv_values
+
+# Features have IV >= 0: 
+
+iv_values %>% 
+  filter(iv_var >= 0) %>% 
+  pull(variable) %>% 
+  as.character() -> var_IV_10
 
 
-- The algorithm that has the most efficient performance is IV/WOE (you can see more about that [here](https://www.kaggle.com/pavansanagapati/weight-of-evidence-woe-information-value-iv))
+# Conduct data transformation based on IV/WoE and filter features with IV > 0.1: 
 
-[![iv-woe-de.png](https://i.postimg.cc/9FJR58Cj/iv-woe-de.png)](https://postimg.cc/Vd0LXFJ7)
+train_woe <- woebin_ply(df_train %>% select(-id), bins_var) %>% 
+  as.data.frame() %>% 
+  select(c("label", paste0(var_IV_10, "_", "woe")))
+
+
+# Data transformation for actual test data: 
+
+test_woe <- woebin_ply(df_test %>% select(-id), bins_var) %>% 
+  as.data.frame() %>% 
+  select(paste0(var_IV_10, "_", "woe"))
+```
